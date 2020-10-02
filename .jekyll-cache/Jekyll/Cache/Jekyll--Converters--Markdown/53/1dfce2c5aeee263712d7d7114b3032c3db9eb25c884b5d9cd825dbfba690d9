@@ -1,0 +1,37 @@
+I"7 <p>YOLO – одна из самым популярных архитектур для обнаружения объектов (object detection). Darknet — библиотека машинного обучения, написанная специально для YOLO на языке С/С++. Естественно она использует OpenCV для реализации массы полезных возможностей. Плюс ко всему, Darknet Yolo имеет хорошее API для работы с ней из-под Python. Всего-то нужно скомпилировать Darknet как SO-библиотеку, и воспользоваться прилагающимся darknet.py скриптом, описывающим его API для Python.
+Процедура проста:</p>
+<ul>
+  <li>компилируем Darknet</li>
+  <li>запускаем python скрипт для обнаружения объектов.</li>
+</ul>
+
+<p>Все так и было в моем случае, пока в какой-то момент, обновление исходного кода Darknet, и последующая его компиляция не стала приводить к ошибки сегментации:
+<img src="/zolan/images/1_1.png" alt="" />
+Ошибка сегментации без явного указания на место сбоя и без трассировки — указывает на то, что вероятно, ошибка произошла в С-расширении. Первым предпринятым шагом было пройти дебаггером по коду в darknet_images.py.
+<img src="/zolan/images/1_2.png" alt="" /><br />
+При попытке импортировать OpenCV возникает ошибка сегментации. Это происходит только при выполнении данного скрипта, и не происходит при выполнении иного пользовательского кода. Причем, ранее рабочая версия Darknet, до обновления исходного кода работает нормально. Естественным желанием является удалить OpenCV из всех сред (в текущий момент использую conda virtual env), и скомпелировать заново. Забегая вперед — это поможет. Однако интересно, что сломалось, чтобы в будущем не допустить таких проблем. А кто сталкивался с компиляцией OpenCV, наверняка знает, что процесс этот не самый простой, особенно для новичка, а для знающего — это просто потерянный час-два времени.
+Как у Вас организовано рабочее пространство? Если Вы Python разработчик, наверняка у Вас под каждый крупный проект настроена виртуальная среда. Если Вы не знаете, как это работает, или не используете такой подход, стоит обратить внимание на изолирование рабочих сред под проекты. В настоящее время я использую менеджер пакетов conda и, соответственно, использую менеджер виртуальных сред conda (conda environments). В среде для работы с Darknet был установлен OpenCV с помощью pip, так как изначально использовалась реализация YOLOv3 на PyTorch. В это время в ходу был OpenCV 4.2.0.32. Когда я перешел на Darknet, эта версия OpenCV все еще была актуальна, но её я скомпилировал из исходников, соответственно, для виртуальной среды я не стал её заменять. Прошло некоторое время и мне понадобился OpenCV скомпилированный с CUDA. Я удалил всё, что связано с текущей версией OpenCV, клонировал текущую версию и скомпилировал глобально. В виртуальной среде осталась та же 4.2.0.32, а глобально версия стала 4.4.0.42. Компиляция новой версии Darknet происходила с новой версией  OpenCV. Данный конфликт версий и привел к ошибке сегментации. Простое обновление версии OpenCV до версии 4.4.х.х в виртуальной среде решило проблему. Причем, компилировать глобально с установкой в нужную среду не было необходимости, сработало обновление с помощью pip. Лучшее решени, вместо использования pip, вероятно, будет — создать символьную ссылку на OpenCV из /usr/local/lib/python3.6/dist-packages/cv2/python-3.6/cv2.cpython-36m-x86_64-linux-gnu.so в актуальную виртуальную среду:
+$ cd ~/anaconda3/envs/env_name/lib/python3.8/site-packages/
+$ ln -s /usr/local/lib/python3.6/dist-packages/cv2/python-3.6/cv2.cpython-36m-x86_64-linux-gnu.so cv2.so   <br />
+Что делать? Создавать виртуальные среды для каждого крупного проекта. Возможно, создавать виртуальные среды для версий крупного проекта, если это оправдано. Если нет, обязательно следите, в каком месте происходит изменение и актуализируйте эти изменения для соответствующего рабочего пространства.</p>
+
+<p>Что почитать:</p>
+<ol>
+  <li><a href="https://www.pyimagesearch.com/2018/05/28/ubuntu-18-04-how-to-install-opencv/">Ubuntu 18.04: как установить OpenCV</a></li>
+</ol>
+
+<p>You’ll find this post in your <code class="language-plaintext highlighter-rouge">_posts</code> directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run <code class="language-plaintext highlighter-rouge">jekyll serve</code>, which launches a web server and auto-regenerates your site when a file is updated.</p>
+
+<p>To add new posts, simply add a file in the <code class="language-plaintext highlighter-rouge">_posts</code> directory that follows the convention <code class="language-plaintext highlighter-rouge">YYYY-MM-DD-name-of-post.ext</code> and includes the necessary front matter. Take a look at the source for this post to get an idea about how it works.</p>
+
+<p>Jekyll also offers powerful support for code snippets:</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nf">print_hi</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
+  <span class="nb">puts</span> <span class="s2">"Hi, </span><span class="si">#{</span><span class="nb">name</span><span class="si">}</span><span class="s2">"</span>
+<span class="k">end</span>
+<span class="n">print_hi</span><span class="p">(</span><span class="s1">'Tom'</span><span class="p">)</span>
+<span class="c1">#=&gt; prints 'Hi, Tom' to STDOUT.</span></code></pre></figure>
+
+<p>Check out the <a href="https://jekyllrb.com/docs/home">Jekyll docs</a> for more info on how to get the most out of Jekyll. File all bugs/feature requests at <a href="https://github.com/jekyll/jekyll">Jekyll’s GitHub repo</a>. If you have questions, you can ask them on <a href="https://talk.jekyllrb.com/">Jekyll Talk</a>.</p>
+
+:ET

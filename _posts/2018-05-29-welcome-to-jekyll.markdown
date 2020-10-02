@@ -1,26 +1,37 @@
 ---
 layout: post
-title:  "Welcome to Jekyll!"
-date:   2018-05-29 18:05:55 +0300
-image:  10.jpg
-tags:   Jekyll
+title:  "Shared library (.so) и Python. Darknet YOLO и OpenCV – ошибка сегментации SIGSEGV"
+date:   2020-10-02 12:00:00 +0300
+image:  01_head_.jpg
+tags:   python, darknet, yolo, opencv
 ---
-You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run `jekyll serve`, which launches a web server and auto-regenerates your site when a file is updated.
+Бывает такое, что вы точно знаете, что ваш скрипт рабочий, но он не работает? При последнем запуске все работало отлично, а сейчас он упал! Где искать причину и как это починить???  
 
-To add new posts, simply add a file in the `_posts` directory that follows the convention `YYYY-MM-DD-name-of-post.ext` and includes the necessary front matter. Take a look at the source for this post to get an idea about how it works.
+YOLO – одна из самым популярных архитектур для обнаружения объектов (object detection). Darknet — библиотека машинного обучения, написанная специально для YOLO на языке С/С++. Естественно она использует OpenCV для реализации массы полезных возможностей. Плюс ко всему, Darknet Yolo имеет хорошее API для работы с ней из-под Python. Всего-то нужно скомпилировать Darknet как SO-библиотеку, и воспользоваться прилагающимся darknet.py скриптом, описывающим его API для Python.  
+Процедура проста:
+- компилируем Darknet
+- запускаем python скрипт для обнаружения объектов.
 
-Jekyll also offers powerful support for code snippets:
+Все так и было в моем случае, пока в какой-то момент, обновление исходного кода Darknet, и последующая его компиляция не стала приводить к ошибки сегментации:  
+![]({{ site.baseurl }}/images/1_1.png)
+Ошибка сегментации без явного указания на место сбоя и без трассировки — указывает на то, что вероятно, ошибка произошла в С-расширении. Первым предпринятым шагом было пройти дебаггером по коду в darknet_images.py.  
+![]({{ site.baseurl }}/images/1_2.png)  
+При попытке импортировать OpenCV возникает ошибка сегментации. Это происходит только при выполнении данного скрипта, и не происходит при выполнении иного пользовательского кода. Причем, ранее рабочая версия Darknet, до обновления исходного кода работает нормально. Естественным желанием является удалить OpenCV из всех сред (в текущий момент использую conda virtual env), и скомпелировать заново. Забегая вперед — это поможет. Однако интересно, что сломалось, чтобы в будущем не допустить таких проблем. А кто сталкивался с компиляцией OpenCV, наверняка знает, что процесс этот не самый простой, особенно для новичка, а для знающего — это просто потерянный час-два времени.  
 
-{% highlight ruby %}
-def print_hi(name)
-  puts "Hi, #{name}"
-end
-print_hi('Tom')
-#=> prints 'Hi, Tom' to STDOUT.
-{% endhighlight %}
+Как у Вас организовано рабочее пространство? Если Вы Python разработчик, наверняка у Вас под каждый крупный проект настроена виртуальная среда. Если Вы не знаете, как это работает, или не используете такой подход, стоит обратить внимание на изолирование рабочих сред под проекты. 
 
-Check out the [Jekyll docs][jekyll-docs] for more info on how to get the most out of Jekyll. File all bugs/feature requests at [Jekyll’s GitHub repo][jekyll-gh]. If you have questions, you can ask them on [Jekyll Talk][jekyll-talk].
+В настоящее время я использую менеджер пакетов conda и, соответственно, использую менеджер виртуальных сред conda (conda environments). В среде для работы с Darknet был установлен OpenCV с помощью pip, так как изначально использовалась реализация YOLOv3 на PyTorch. В это время в ходу был OpenCV 4.2.0.32. Когда я перешел на Darknet, эта версия OpenCV все еще была актуальна, но её я скомпилировал из исходников, а для виртуальной среды не стал её заменять. Прошло некоторое время и понадобился OpenCV скомпилированный с CUDA. Я удалил всё, что связано с текущей версией OpenCV, клонировал текущую версию и скомпилировал глобально. В виртуальной среде осталась та же 4.2.0.32, а глобально версия стала 4.4.0.42. Компиляция новой версии Darknet происходила с новой версией  OpenCV. Данный конфликт версий и привел к ошибке сегментации. Простое обновление версии OpenCV до версии 4.4.х.х в виртуальной среде решило проблему. Причем, компилировать глобально с установкой в нужную среду не было необходимости, сработало обновление с помощью pip. Лучшее решени, вместо использования pip, вероятно, будет — создать символьную ссылку на OpenCV из 
+```
+/usr/local/lib/python3.6/dist-packages/cv2/python-3.6/cv2.cpython-36m-x86_64-linux-gnu.so
+``` 
+в актуальную виртуальную среду:  
+```
+$ cd ~/anaconda3/envs/env_name/lib/python3.8/site-packages/  
+$ ln -s /usr/local/lib/python3.6/dist-packages/cv2/python-3.6/cv2.cpython-36m-x86_64-linux-gnu.so cv2.so        
+```
+Что делать? Создавать виртуальные среды для каждого крупного проекта. Возможно, создавать виртуальные среды для версий крупного проекта, если это оправдано. Если нет, обязательно следите, в каком месте происходит изменение и актуализируйте эти изменения для соответствующего рабочего пространства.
 
-[jekyll-docs]: https://jekyllrb.com/docs/home
-[jekyll-gh]:   https://github.com/jekyll/jekyll
-[jekyll-talk]: https://talk.jekyllrb.com/
+Что почитать:
+1. [Ubuntu 18.04: как установить OpenCV] 
+
+[Ubuntu 18.04: как установить OpenCV]: https://www.pyimagesearch.com/2018/05/28/ubuntu-18-04-how-to-install-opencv/
