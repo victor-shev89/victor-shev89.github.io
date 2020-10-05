@@ -67,6 +67,10 @@
     background-position: center;
     background-repeat: no-repeat;
     background-color: $light-gray;
+    max-height: 800px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
   &:after {
     content: "";
     display: table;
@@ -148,6 +152,10 @@
       background-repeat: no-repeat;
       background-color: $light-gray;
       transition: .35s ease-in-out;
+      max-height: 500px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
       &:hover {
         opacity: 0.9;
       }
