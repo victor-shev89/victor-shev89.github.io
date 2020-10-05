@@ -30,7 +30,7 @@ disqus-identifier: victor-shev89-github-io # add your shortname for Disqus Comme
 
 #-------------------------------
 # Instagram Feed
-instafeed: true # To enable the instafeed, use the value true. To turn off use the value false.
+instafeed: false # To enable the instafeed, use the value true. To turn off use the value false.
 instagram-profile: victor_shev89 # Add instagram username
 
 
