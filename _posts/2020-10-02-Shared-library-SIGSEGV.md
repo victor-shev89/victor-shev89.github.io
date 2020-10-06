@@ -3,7 +3,7 @@ layout: post
 title:  "Shared library (.so) и Python. Darknet YOLO и OpenCV – ошибка сегментации SIGSEGV"
 date:   2020-10-02 12:00:00 +0300
 image:  01_head_.jpg
-tags:   python, darknet, yolo, opencv
+tags:   python darknet yolo opencv
 ---
 Бывает такое, что вы точно знаете, что ваш скрипт рабочий, но он не работает? При последнем запуске все работало отлично, а сейчас он упал! Где искать причину и как это починить???  
 
