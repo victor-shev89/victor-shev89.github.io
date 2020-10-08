@@ -1,6 +1,6 @@
 ---
 layout: tagpage
-title: "Tag: python"
-tag: python
+title: "Tag: darknet"
+tag: darknet
 robots: noindex
 ---

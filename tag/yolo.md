@@ -1,6 +1,6 @@
 ---
 layout: tagpage
-title: "Tag: python"
-tag: python
+title: "Tag: yolo"
+tag: yolo
 robots: noindex
 ---
