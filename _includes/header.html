@@ -27,7 +27,10 @@
               <li class="nav__item">
                 <a href="{{site.baseurl}}/" class="nav__link">Главная</a>
               </li>
-              {% for page in site.pages %}
+              <li class="nav__item">
+                <a href="{{site.baseurl}}/about/" class="nav__link">CV</a>
+              </li>
+              <!--{% for page in site.pages %}
                 {% unless page.name == 'tags.html' or page.name == '404.html' %}
               {% if page.title %}
               <li class="nav__item">
@@ -35,7 +38,7 @@
               </li>
               {% endif %}
                 {% endunless %}
-              {% endfor %}
+              {% endfor %} -->
             </ul>
 
           </div>
